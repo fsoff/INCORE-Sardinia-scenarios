@@ -1,0 +1,992 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>INCORE-MED | Scenari normativi di backcasting · v8</title>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+:root{
+  --blue:#2a317d;
+  --blue2:#2a327f;
+  --policy:#769bad;
+  --area:#f4a71d;
+  --nature:#43af66;
+  --risk:#da1f26;
+  --paper:#fff;
+  --muted:#eef2f7;
+  --ink:#121a46;
+  --shadow:0 20px 46px rgba(42,49,125,.18);
+  --shadow-soft:0 14px 34px rgba(42,49,125,.14);
+  --radius:28px;
+  --panel-gap:14px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  margin:0;
+  font-family:"Avenir Next","Avenir Next World","Montserrat","Trebuchet MS",Arial,sans-serif;
+  color:var(--blue);
+  background:radial-gradient(circle at top,#ffffff 0,#f4f6fb 40%,#e7ecf4 100%);
+  overflow:hidden;
+}
+button,input,textarea{font:inherit;}
+button{cursor:pointer;border:0;}
+.app-shell{height:100dvh;padding:14px;}
+.workspace{width:100%;height:100%;display:grid;grid-template-columns:1fr;}
+.viewport-card{
+  position:relative;background:rgba(255,255,255,.92);border:2px solid rgba(42,49,125,.88);border-radius:18px;
+  box-shadow:var(--shadow);overflow:hidden;height:calc(100dvh - 28px);
+  display:grid;grid-template-rows:104px minmax(0,1fr) 72px 222px; min-height:760px;
+}
+.app-header{display:grid;grid-template-columns:190px minmax(520px,1fr) auto;align-items:center;gap:16px;padding:13px 18px 12px;border-bottom:1px solid rgba(42,49,125,.18);background:rgba(255,255,255,.94);backdrop-filter:blur(10px);position:relative;z-index:20;}
+.logo-link{display:flex;align-items:center;min-width:0;text-decoration:none;}
+.logo-link img{width:166px;max-height:58px;object-fit:contain;object-position:left center;}
+.scenario-heading{min-width:0;text-align:left;}
+.kicker{font-size:11px;font-weight:900;letter-spacing:.13em;text-transform:uppercase;color:var(--policy);margin-bottom:2px;}
+.title-row{display:flex;align-items:center;gap:14px;min-width:0;}
+.scenario-title{font-size:24px;line-height:1.02;font-weight:900;letter-spacing:-.02em;color:var(--blue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+.scenario-subtitle{font-size:12px;font-weight:800;color:#566097;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.scenario-jump{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;flex-shrink:0;}
+.scenario-jump button{border:1px solid rgba(42,49,125,.18);background:#fff;color:var(--blue);border-radius:999px;padding:5px 8px;font-size:10px;line-height:1;font-weight:900;box-shadow:0 5px 12px rgba(42,49,125,.06);}
+.scenario-jump button:hover{background:#f4f6fb;}
+.scenario-jump button.s1{border-color:rgba(244,167,29,.55)}
+.scenario-jump button.s2{border-color:rgba(67,175,102,.55)}
+.scenario-jump button.s3{border-color:rgba(218,31,38,.45)}
+.header-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:nowrap;min-width:0;}
+.pill-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:34px;padding:7px 11px;border-radius:999px;font-size:11px;font-weight:900;color:var(--blue);background:#fff;border:2px solid #dfe4f1;box-shadow:0 7px 16px rgba(42,49,125,.08);white-space:nowrap;}
+.pill-btn.primary{background:var(--blue);color:#fff;border-color:var(--blue);}
+.pill-btn.orange{border-color:rgba(244,167,29,.55);color:var(--blue);}
+.pill-btn:active{transform:scale(.98);}
+.snapshot-icon{width:19px;height:19px;background:url('assets/camera-snapshot.png') center/contain no-repeat;display:inline-block;}
+.audio-icon{width:18px;height:18px;position:relative;display:inline-block;}
+.audio-icon:before{content:"";position:absolute;left:1px;top:5px;width:6px;height:8px;background:currentColor;border-radius:2px 0 0 2px;}
+.audio-icon:after{content:"";position:absolute;left:5px;top:2px;width:10px;height:14px;border:2px solid currentColor;border-left:0;border-radius:0 12px 12px 0;}
+.audio-off .audio-icon span{position:absolute;left:1px;top:8px;width:18px;height:2px;background:currentColor;transform:rotate(-38deg);border-radius:999px;}
+.scene-wrap{position:relative;overflow:hidden;background:#d7ebf2;min-height:0;}
+.scene-frame{position:absolute;inset:0;overflow:hidden;background:#d7ebf2;perspective:960px;transform-style:preserve-3d;}
+.panorama-window{position:absolute;inset:0 0 0 0;overflow:hidden;}
+.panorama-bg{position:absolute;left:0;top:0;height:100%;width:auto;max-width:none;object-fit:contain;object-position:left center;will-change:filter,transform;background-color:#b7dce9;user-select:none;pointer-events:none;}
+.sea-glow{position:absolute;inset:0;background:radial-gradient(circle at 65% 40%,rgba(255,255,255,.28),rgba(255,255,255,0) 42%),linear-gradient(90deg,rgba(42,49,125,.06),rgba(244,167,29,.03),rgba(67,175,102,.05));pointer-events:none;mix-blend-mode:screen;}
+.overlay{position:absolute;inset:0;pointer-events:none;transition:opacity .45s ease,background .45s ease;}
+.overlay-heat{background:radial-gradient(circle at 66% 36%,rgba(218,31,38,.56),rgba(244,167,29,.26) 34%,rgba(218,31,38,0) 67%);mix-blend-mode:multiply;opacity:0;}
+.overlay-acid{background:linear-gradient(100deg,rgba(42,49,125,.02),rgba(118,155,173,.38),rgba(65,106,187,.28),rgba(255,255,255,0));mix-blend-mode:multiply;opacity:0;}
+.overlay-dark{background:rgba(8,12,34,.62);opacity:0;}
+.overlay-noise{background-image:radial-gradient(rgba(255,255,255,.18) 1px,transparent 1px);background-size:5px 5px;mix-blend-mode:overlay;opacity:.06;}
+.viewer-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.15) 1px,transparent 1px);background-size:28px 28px;opacity:.33;pointer-events:none;}
+.scene-layer,.note-layer{position:absolute;left:0;top:0;height:100%;width:100%;transform-style:preserve-3d;transition:transform .35s ease;pointer-events:none;transform-origin:left center;}
+.note-layer{pointer-events:auto;}
+.sprite{position:absolute;user-select:none;pointer-events:none;transform-origin:center center;transition:opacity .42s ease,filter .42s ease,transform .42s ease;width:var(--w,120px);left:var(--x);top:var(--y);opacity:var(--op,1);z-index:var(--z,3);filter:drop-shadow(0 26px 22px rgba(0,0,0,.52)) drop-shadow(0 10px 8px rgba(0,0,0,.28)) drop-shadow(0 0 12px rgba(255,255,255,.72)) blur(var(--blur,0));transform:rotate(var(--rot,0deg)) scale(var(--scale,1));}
+.sprite.risk-blur{filter:drop-shadow(0 32px 26px rgba(0,0,0,.56)) drop-shadow(0 10px 10px rgba(0,0,0,.26)) drop-shadow(0 0 14px rgba(255,255,255,.58)) blur(var(--uncertainty,0px));}
+.sprite.eco{--z:2}.sprite.fauna{--z:3}.sprite.human{--z:5}.sprite.clouds{--z:1}.sprite.aquaculture{--z:4}.sprite.wind{--z:4}
+.climate-card{position:absolute;left:var(--x);top:var(--y);width:var(--w,168px);min-height:70px;border-radius:16px;padding:10px 11px 9px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.72);box-shadow:0 22px 30px rgba(18,26,70,.18),0 4px 14px rgba(255,255,255,.45);z-index:6;color:#fff;backdrop-filter:blur(5px);opacity:var(--op,1);transform:rotate(var(--rot,0deg)) scale(var(--scale,1));transition:opacity .42s ease,transform .42s ease,filter .42s ease;pointer-events:none;}
+.climate-card.sea-level{background:linear-gradient(135deg,rgba(42,49,125,.54),rgba(118,155,173,.42));}
+.climate-card.acidification{background:linear-gradient(135deg,rgba(118,155,173,.56),rgba(42,49,125,.42));}
+.climate-card .metric-title{font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;text-shadow:0 1px 2px rgba(0,0,0,.3);}
+.climate-card .metric-value{font-size:17px;font-weight:900;margin-top:2px;line-height:1.05;text-shadow:0 2px 4px rgba(0,0,0,.32);}
+.climate-card svg{display:block;width:100%;height:26px;margin-top:4px;overflow:visible;}
+.climate-card path{fill:none;stroke:#fff;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35));}
+.climate-card .axis{stroke:rgba(255,255,255,.45);stroke-width:1.1;}
+.climate-card small{display:block;margin-top:1px;font-size:8px;font-weight:800;opacity:.94;line-height:1.1;}
+.left-narrative{position:absolute;left:22px;top:118px;width:min(32%,360px);min-height:232px;border-radius:24px;padding:18px 18px 16px;background:rgba(255,255,255,.92);border:1px solid rgba(42,49,125,.15);color:var(--blue);box-shadow:0 22px 44px rgba(18,26,70,.16);z-index:14;}
+.left-narrative h2{font-size:20px;line-height:1.08;margin:0 0 11px;font-weight:900;color:var(--blue);letter-spacing:-.02em;}
+.left-narrative p{font-size:13px;line-height:1.5;margin:0 0 12px;color:#344070;}
+.status-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+.status-chip{font-size:10px;font-weight:900;border:1px solid rgba(42,49,125,.15);border-radius:999px;padding:5px 8px;background:#fff;color:var(--blue);}
+.score-panel{position:absolute;right:22px;bottom:18px;width:220px;padding:12px;border-radius:20px;background:rgba(255,255,255,.89);border:1px solid rgba(42,49,125,.12);box-shadow:var(--shadow-soft);z-index:15;}
+.score-title{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#6671a1;margin-bottom:8px;}
+.score-row{display:grid;grid-template-columns:26px 1fr 28px;align-items:center;gap:6px;font-size:11px;font-weight:900;color:#5a6396;margin:7px 0;}
+.score-bar{height:10px;border-radius:999px;background:#edf1f8;overflow:hidden;}
+.score-fill{height:100%;border-radius:999px;width:0;transition:width .35s ease;}
+.map-dial-wrap{position:absolute;right:28px;top:18px;display:flex;flex-direction:column;align-items:center;gap:6px;z-index:17;}
+.map-dial{width:230px;height:230px;border-radius:50%;background:#fff;border:2px solid var(--blue);box-shadow:var(--shadow-soft);display:grid;place-items:center;touch-action:none;position:relative;}
+.map-dial:before{content:"";position:absolute;inset:9px;border-radius:50%;border:1px dashed rgba(42,49,125,.58);}
+.map-dial:after{content:"N";position:absolute;top:3px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:900;color:var(--blue);}
+.map-inner{width:176px;height:176px;border-radius:50%;overflow:hidden;border:1px solid #dfe4f1;background-image:url('assets/Mappa-olbia.png');background-size:cover;background-position:center;transition:transform .12s linear;}
+.map-label{display:none;}
+.deg-label{font-size:11px;font-weight:900;color:var(--blue);}
+.orientation-bar{width:440px;padding:10px 14px 12px;background:rgba(255,255,255,.93);border:1px solid rgba(42,49,125,.12);border-radius:18px;box-shadow:var(--shadow-soft);}
+.orientation-bar .small-label{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#6671a1;margin-bottom:7px;}
+.orientation-track{width:100%;}
+.orientation-zones{display:flex;justify-content:space-between;gap:10px;font-size:9px;font-weight:900;color:#6872a1;margin-top:5px;}
+
+.top-orientation{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:min(760px,50vw);height:58px;padding:8px 0;background:transparent;border:0;border-radius:0;box-shadow:none;z-index:18;}
+.top-orientation .small-label{display:none;}
+.top-orientation-zones{display:none;}
+.top-orientation .orientation-track::-webkit-slider-runnable-track{background:#d6ddef;}
+.top-orientation .orientation-track::-moz-range-track{background:#d6ddef;}
+
+.scene-layer .climate-card{display:none !important;}
+.metrics-strip{position:absolute;top:54px;right:330px;display:flex;gap:7px;z-index:19;pointer-events:none;}
+.metrics-strip .metric-box{width:116px;min-height:45px;border-radius:12px;padding:6px 8px 6px;background:rgba(255,255,255,.92);border:1px solid rgba(255,255,255,.42);box-shadow:0 10px 20px rgba(18,26,70,.12);color:#fff;backdrop-filter:blur(5px);}
+.metrics-strip .metric-box h4{margin:0 0 2px;font-size:8px;text-transform:uppercase;letter-spacing:.07em;color:#fff;font-weight:900;}
+.metrics-strip .metric-box .metric-readout{font-size:13px;font-weight:900;line-height:1.05;margin-bottom:0;color:#fff;}
+.metrics-strip .metric-box .metric-caption{display:none;}
+.metrics-strip .metric-box svg{width:100%;height:20px;display:block;margin:1px 0 0;overflow:visible;}
+.metrics-strip .metric-box .axis{stroke:rgba(255,255,255,.28);stroke-width:1;fill:none;}
+.metrics-strip .metric-box .trend{stroke:#ffffff;stroke-width:2.4;fill:none;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 2px rgba(0,0,0,.15));}
+.metrics-strip .metric-box.sea{background:rgba(42,49,125,.75);color:#fff;}
+.metrics-strip .metric-box.sea h4,.metrics-strip .metric-box.sea .metric-readout,.metrics-strip .metric-box.sea .metric-caption{color:#fff;}
+.metrics-strip .metric-box.acid{background:rgba(244,167,29,.78);color:#fff;}
+.metrics-strip .metric-box.acid h4,.metrics-strip .metric-box.acid .metric-readout,.metrics-strip .metric-box.acid .metric-caption{color:#fff;}
+@media (max-width: 1280px){.metrics-strip{right:300px;transform:scale(.88);transform-origin:top right;}}
+@media (max-width: 1100px){.metrics-strip{right:260px;top:60px;transform:scale(.76);}}
+
+
+.placement-hint{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);background:rgba(244,167,29,.92);color:#fff;padding:9px 12px;border-radius:999px;font-size:11px;font-weight:900;box-shadow:0 14px 28px rgba(244,167,29,.26);opacity:0;pointer-events:none;z-index:16;transition:opacity .25s ease;}
+.placing .placement-hint{opacity:1;}
+.hotspot{position:absolute;width:28px;height:28px;border-radius:50%;background:rgba(244,167,29,.82);border:2px solid rgba(255,255,255,.95);box-shadow:0 0 0 8px rgba(244,167,29,.16),0 14px 26px rgba(42,49,125,.28);transform:translate(-50%,-50%);display:grid;place-items:center;pointer-events:auto;z-index:16;}
+.hotspot.out-of-setup{display:none;}
+.hotspot::before{content:"";width:8px;height:8px;border-radius:50%;background:#fff;}
+.hotspot::after{content:"";position:absolute;inset:-7px;border-radius:50%;border:2px solid rgba(244,167,29,.32);animation:pulse 2.2s infinite;}
+@keyframes pulse{0%{transform:scale(.82);opacity:.92}70%{transform:scale(1.28);opacity:0}100%{opacity:0}}
+.timeline-row{position:relative;border-top:1px solid rgba(42,49,125,.16);border-bottom:1px solid rgba(42,49,125,.16);background:rgba(255,255,255,.73);display:grid;grid-template-columns:84px 1fr;align-items:center;gap:14px;padding:8px 16px;z-index:19;}
+.timeline-label{font-size:11px;font-weight:900;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;}
+.timeline-wrap{position:relative;padding:0 8px;}
+.timeline-input,.preset-input,.orientation-track{width:100%;appearance:none;height:42px;background:transparent;}
+.timeline-input::-webkit-slider-runnable-track,.preset-input::-webkit-slider-runnable-track,.orientation-track::-webkit-slider-runnable-track{height:9px;border-radius:999px;background:#d6ddef;}
+.timeline-input::-moz-range-track,.preset-input::-moz-range-track,.orientation-track::-moz-range-track{height:9px;border-radius:999px;background:#d6ddef;}
+.timeline-input::-webkit-slider-thumb{appearance:none;width:66px;height:36px;margin-top:-14px;background:url('assets/Cursore-timeline.png') center/contain no-repeat;border:0;filter:drop-shadow(0 5px 8px rgba(42,49,125,.22));}
+.timeline-input::-moz-range-thumb{width:66px;height:36px;background:url('assets/Cursore-timeline.png') center/contain no-repeat;border:0;filter:drop-shadow(0 5px 8px rgba(42,49,125,.22));}
+.orientation-track::-webkit-slider-thumb,.preset-input::-webkit-slider-thumb{appearance:none;width:62px;height:62px;margin-top:-26px;background:url('assets/Cursore-costa-mare.png') center/contain no-repeat;border:0;filter:drop-shadow(0 6px 10px rgba(42,49,125,.22));}
+.orientation-track::-moz-range-thumb,.preset-input::-moz-range-thumb{width:62px;height:62px;background:url('assets/Cursore-costa-mare.png') center/contain no-repeat;border:0;filter:drop-shadow(0 6px 10px rgba(42,49,125,.22));}
+.year-marks{display:grid;grid-template-columns:repeat(4,1fr);font-size:10px;color:#5b6496;font-weight:900;margin-top:-3px;}
+.year-marks span:nth-child(2){text-align:center}.year-marks span:nth-child(3){text-align:center}.year-marks span:nth-child(4){text-align:right}
+.year-display{display:none;}
+.control-panel{background:rgba(255,255,255,.94);display:grid;grid-template-columns:330px minmax(690px,1fr) 250px;gap:16px;padding:14px 16px 16px;position:relative;z-index:20;align-items:start;}
+.left-tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-content:start;}
+.tool-round{height:44px;border-radius:999px;display:grid;place-items:center;border:2px solid #dfe4f1;background:#fff;color:var(--blue);font-size:11px;font-weight:900;box-shadow:0 8px 18px rgba(42,49,125,.08);padding:0 10px;}
+.tool-round.blue{background:var(--blue);color:#fff;border-color:var(--blue);} 
+.note-compose{grid-column:1 / -1;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start;}
+.note-box{width:100%;min-height:76px;border:2px solid #dfe4f1;border-radius:16px;padding:10px 11px;color:var(--blue);resize:none;font-size:12px;line-height:1.35;outline:none;}
+.note-box:focus{border-color:var(--policy);box-shadow:0 0 0 3px rgba(118,155,173,.18);} 
+.sliders{display:flex;align-items:stretch;justify-content:center;gap:10px;min-width:0;flex-wrap:nowrap;}
+.slider-card{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:7px;width:74px;min-width:70px;}
+.v-slider-shell{display:flex;align-items:stretch;gap:6px;}
+.slider-scale{height:128px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;font-size:9px;font-weight:900;color:#7882ad;padding:2px 0;}
+.slider-scale span{display:block;line-height:1;}
+.v-slider-wrap{height:128px;width:32px;border:2px solid #dfe4f1;border-radius:999px;background:#fff;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 8px 18px rgba(42,49,125,.06);} 
+.v-slider{position:absolute;width:122px;height:24px;transform:rotate(-90deg);accent-color:var(--blue);}
+.slider-card label{font-size:10px;line-height:1.12;text-align:center;font-weight:900;color:#5b6496;}
+.slider-value{font-size:13px;font-weight:900;color:var(--blue);}
+.preset-panel{display:grid;gap:10px;}
+.legend-box{min-height:120px;padding:12px;border-radius:16px;background:#fff;border:2px solid #dfe4f1;font-size:12px;line-height:1.35;color:#475389;}
+.preset-label{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#6671a1;margin-bottom:5px;}
+.preset-zones{display:flex;justify-content:space-between;gap:10px;font-size:9px;font-weight:900;color:#6872a1;margin-top:6px;}
+.footer-note{display:none;}
+.modal{position:fixed;inset:0;background:rgba(18,26,70,.45);display:none;align-items:center;justify-content:center;z-index:200;padding:24px;}
+.modal.active{display:flex;}
+.modal-card{width:min(720px,92vw);max-height:86vh;overflow:auto;border-radius:28px;background:#fff;padding:22px 22px 18px;border:2px solid rgba(42,49,125,.12);box-shadow:0 28px 50px rgba(18,26,70,.22);} 
+.modal-card h3{margin:0 0 12px;color:var(--blue);font-size:24px;line-height:1.08;}
+.modal-card p,.modal-card li{font-size:14px;line-height:1.5;color:#344070;}
+.modal-card ul{padding-left:18px;margin:8px 0 16px;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
+@media (max-width:1280px){
+  .app-header{grid-template-columns:160px minmax(420px,1fr) auto;gap:10px;}
+  .logo-link img{width:142px;}
+  .scenario-jump button{font-size:9px;padding:5px 6px;}
+  .top-orientation{width:min(660px,46vw);}
+}
+@media (max-width:1180px){
+  body{overflow:auto;}
+  .viewport-card{height:auto;min-height:auto;grid-template-rows:88px 540px 72px auto;}
+  .control-panel{grid-template-columns:1fr;}
+  .left-tools{grid-template-columns:repeat(4,minmax(0,1fr));}
+  .map-dial-wrap{right:16px;top:18px;transform:scale(.74);transform-origin:top right;}
+  .top-orientation{width:min(540px,58vw);}
+  .score-panel{width:200px;}
+}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <main class="workspace">
+    <section class="viewport-card" id="appCard">
+      <header class="app-header">
+        <a class="logo-link" href="https://incore-med.interreg-euro-med.eu/" target="_blank" rel="noopener noreferrer" aria-label="Vai al sito INCORE-MED">
+          <img src="assets/loghi.png" alt="Loghi INCORE-MED">
+        </a>
+        <div class="scenario-heading">
+          <div class="kicker">Backcasting normativo · baseline 2026</div>
+          <div class="title-row">
+            <div class="scenario-title" id="scenarioTitle">Scenario intermedio</div>
+            <div class="scenario-jump" aria-label="Preset scenari principali">
+              <button class="s1" data-scenario-preset="S1">S1 Blue paradise</button>
+              <button class="s2" data-scenario-preset="S2">S2 Protected waters</button>
+              <button class="s3" data-scenario-preset="S3">S3 Fragmented sea</button>
+            </div>
+          </div>
+          <div class="scenario-subtitle" id="scenarioSubtitle">Traiettoria non ancora stabilizzata</div>
+        </div>
+        <div class="header-actions">
+          <button class="pill-btn orange" id="snapshotBtn"><span class="snapshot-icon" aria-hidden="true"></span>Scarica JPEG</button>
+          <button class="pill-btn" id="audioBtn"><span class="audio-icon"><span></span></span><span id="audioText">Audio OFF</span></button>
+          <button class="pill-btn" id="tutorialBtn">Tutorial</button>
+        </div>
+      </header>
+
+      <div class="scene-wrap" id="sceneWrap">
+        <div class="placement-hint">Clicca nel panorama per associare la nota a un punto della scena</div>
+        <div class="top-orientation" title="Orientamento costa-mare">
+          <div class="small-label"></div>
+          <input class="orientation-track" id="orientationRange" type="range" min="0" max="360" value="0" aria-label="Orientamento del panorama">
+          <div class="top-orientation-zones"><span>Costa</span><span>Mare aperto</span></div>
+        </div>
+        <div class="metrics-strip" aria-label="Indicatori climatici">
+          <div class="metric-box sea">
+            <h4>Livello acqua</h4>
+            <div class="metric-readout" data-metric="seaLevel">+0 cm</div>
+            <svg viewBox="0 0 150 34" aria-hidden="true">
+              <path class="axis" d="M4 28H146"/>
+              <path class="trend" data-trend="seaLevel" d="M6 24 C34 24, 54 20, 76 18 S114 10, 144 6"/>
+            </svg>
+          </div>
+          <div class="metric-box acid">
+            <h4>Acidificazione</h4>
+            <div class="metric-readout" data-metric="acidification">pH −0.00</div>
+            <svg viewBox="0 0 150 34" aria-hidden="true">
+              <path class="axis" d="M4 8H146"/>
+              <path class="trend" data-trend="acidification" d="M6 8 C34 9, 54 12, 76 15 S114 22, 144 26"/>
+            </svg>
+          </div>
+        </div>
+        <div class="scene-frame" id="sceneFrame">
+          <div class="panorama-window">
+            <img class="panorama-bg" id="panoramaBg" src="assets/panorama2.png" alt="Panorama del Golfo di Olbia">
+            <div class="sea-glow"></div>
+            <div class="scene-layer" id="sceneLayer">
+              <!-- Ecosistemi in basso -->
+              <img class="sprite eco healthy" data-role="posidoniaHealthy" src="assets/poseidonia-sana.png" style="--x:36%;--y:70%;--w:105px;--depth:.35;--rot:-5deg;--scale:.9" alt="">
+              <img class="sprite eco healthy" data-role="posidoniaHealthy" src="assets/poseidonia-sana.png" style="--x:58%;--y:69%;--w:98px;--depth:.48;--rot:8deg;--scale:.85" alt="">
+              <img class="sprite eco healthy" data-role="posidoniaHealthy" src="assets/poseidonia-sana.png" style="--x:75%;--y:72%;--w:88px;--depth:.62;--rot:-12deg;--scale:.80" alt="">
+              <img class="sprite eco stressed risk-blur" data-role="posidoniaStressed" src="assets/poseidonia-malata.png" style="--x:48%;--y:72%;--w:100px;--depth:.55;--rot:7deg;--scale:.88" alt="">
+              <img class="sprite eco stressed risk-blur" data-role="posidoniaStressed" src="assets/poseidonia-spiaggia.png" style="--x:22%;--y:74%;--w:92px;--depth:.42;--rot:-6deg;--scale:.88" alt="">
+              <img class="sprite fauna soft" data-role="fish" src="assets/banco-pesci.png" style="--x:52%;--y:62%;--w:82px;--depth:.82;--rot:12deg;--scale:.72" alt="">
+              <img class="sprite fauna soft" data-role="fish" src="assets/dentice.png" style="--x:64%;--y:60%;--w:72px;--depth:.85;--rot:-3deg;--scale:.68" alt="">
+              <img class="sprite fauna soft" data-role="fish" src="assets/pesce-grande.png" style="--x:44%;--y:58%;--w:78px;--depth:.74;--rot:1deg;--scale:.68" alt="">
+              <img class="sprite fauna soft" data-role="cetacean" src="assets/capodoglio.png" style="--x:74%;--y:52%;--w:102px;--depth:.95;--rot:0deg;--scale:.68" alt="">
+              <img class="sprite fauna soft" data-role="cetacean" src="assets/cetaceo-medio.png" style="--x:30%;--y:47%;--w:88px;--depth:.72;--rot:2deg;--scale:.64" alt="">
+
+              <!-- Attività umane sopra i pesci -->
+              <img class="sprite human fishing" data-role="fishing" src="assets/pesca-media.png" style="--x:41%;--y:45%;--w:96px;--depth:.62;--rot:-2deg;--scale:.64" alt="">
+              <img class="sprite human fishing" data-role="fishing" src="assets/pesca-grande-max.png" style="--x:61%;--y:40%;--w:112px;--depth:.72;--rot:3deg;--scale:.62" alt="">
+              <img class="sprite human tourism" data-role="tourism" src="assets/barca-vela.png" style="--x:71%;--y:33%;--w:58px;--depth:1.1;--rot:3deg;--scale:.70" alt="">
+              <img class="sprite human tourism" data-role="tourism" src="assets/pescaturismo.png" style="--x:80%;--y:50%;--w:98px;--depth:.88;--rot:-2deg;--scale:.62" alt="">
+              <img class="sprite human traffic risk-blur" data-role="traffic" src="assets/motoscafo-piccolo.png" style="--x:83%;--y:36%;--w:72px;--depth:1.05;--rot:0deg;--scale:.70" alt="">
+              <img class="sprite human traffic risk-blur" data-role="traffic" src="assets/motoscafo-medio2.png" style="--x:59%;--y:52%;--w:112px;--depth:.82;--rot:-2deg;--scale:.66" alt="">
+              <img class="sprite human cargo risk-blur" data-role="cargo" src="assets/cargo-medio.png" style="--x:27%;--y:38%;--w:108px;--depth:.52;--rot:0deg;--scale:.60" alt="">
+              <img class="sprite human cargo risk-blur" data-role="petroleum" src="assets/petroliera.png" style="--x:50%;--y:32%;--w:124px;--depth:.6;--rot:0deg;--scale:.60" alt="">
+              <img class="sprite human sustainable" data-role="sustainableCargo" src="assets/cargo-sostenibile.png" style="--x:48%;--y:29%;--w:92px;--depth:.63;--rot:1deg;--scale:.58" alt="">
+              <img class="sprite human aquaculture" data-role="aquaculture" src="assets/Acquacoltura.png" style="--x:31%;--y:60%;--w:110px;--depth:.48;--rot:0deg;--scale:.64" alt="">
+              <img class="sprite human wind" data-role="wind" src="assets/eolico.png" style="--x:72%;--y:34%;--w:92px;--depth:.58;--rot:0deg;--scale:.76" alt="">
+
+              <!-- Indicatori climatici ancorati al panorama -->
+              <div class="climate-card sea-level" data-role="seaLevelChart" style="--x:15%;--y:18%;--w:168px;--depth:.36;--rot:-1deg;--scale:.92">
+                <div class="metric-title">Livello acqua</div>
+                <div class="metric-value" data-metric="seaLevel">+0 cm</div>
+                <svg viewBox="0 0 130 30" aria-hidden="true"><path class="axis" d="M4 25H126"/><path d="M6 24 C36 23, 46 19, 66 17 S100 9, 124 4"/></svg>
+                <small data-metric-source="seaLevel">trend Mediterraneo/IPCC</small>
+              </div>
+              <div class="climate-card acidification" data-role="acidChart" style="--x:38%;--y:20%;--w:174px;--depth:.40;--rot:1deg;--scale:.90">
+                <div class="metric-title">Acidificazione</div>
+                <div class="metric-value" data-metric="acidification">pH −0.00</div>
+                <svg viewBox="0 0 130 30" aria-hidden="true"><path class="axis" d="M4 8H126"/><path d="M6 6 C31 8, 48 13, 66 16 S102 23, 124 25"/></svg>
+                <small data-metric-source="acidification">scenario stress climatico</small>
+              </div>
+
+              <!-- Nuvole in alto -->
+              <img class="sprite clouds risk-blur" data-role="clouds" src="assets/nuvola-grande.png" style="--x:48%;--y:8%;--w:220px;--depth:.25;--rot:0deg;--scale:.86" alt="">
+              <img class="sprite clouds risk-blur" data-role="clouds" src="assets/nuvola-piccola.png" style="--x:70%;--y:10%;--w:154px;--depth:.30;--rot:0deg;--scale:.80" alt="">
+            </div>
+            <div class="note-layer" id="noteLayer"></div>
+          </div>
+          <div class="viewer-grid"></div>
+          <div class="overlay overlay-heat" id="heatOverlay"></div>
+          <div class="overlay overlay-acid" id="acidOverlay"></div>
+          <div class="overlay overlay-dark" id="darkOverlay"></div>
+          <div class="overlay overlay-noise" id="noiseOverlay"></div>
+        </div>
+
+        <article class="left-narrative" id="narrativePanel">
+          <h2 id="narrativeTitle">Scenario intermedio</h2>
+          <p id="narrativeText">La configurazione iniziale parte dal 2026. Muovi le leve per costruire una traiettoria di backcasting e avvicinarti a uno degli scenari normativi.</p>
+          <div class="status-chips" id="statusChips"></div>
+        </article>
+
+        <aside class="score-panel" aria-label="Punteggi scenario">
+          <div class="score-title">Coerenza con gli scenari</div>
+          <div class="score-row"><span>S1</span><div class="score-bar"><div class="score-fill" id="scoreS1"></div></div><span id="scoreS1n">0</span></div>
+          <div class="score-row"><span>S2</span><div class="score-bar"><div class="score-fill" id="scoreS2"></div></div><span id="scoreS2n">0</span></div>
+          <div class="score-row"><span>S3</span><div class="score-bar"><div class="score-fill" id="scoreS3"></div></div><span id="scoreS3n">0</span></div>
+        </aside>
+
+        <div class="map-dial-wrap">
+          <div class="map-dial" id="mapDial" title="Ruota orientamento mappa/scena">
+            <div class="map-inner" id="mapInner"></div><div class="map-label"></div>
+          </div>
+          <div class="deg-label" id="degLabel">0°</div>
+
+        </div>
+      </div>
+
+      <div class="timeline-row">
+        <div class="timeline-label">Orizzonte</div>
+        <div class="timeline-wrap">
+          <input class="timeline-input" id="timeline" type="range" min="0" max="100" value="0" aria-label="Orizzonte temporale">
+          <div class="year-marks"><span>2026<br>baseline</span><span>2031<br>breve</span><span>2051<br>medio</span><span>2100<br>stress test</span></div>
+        </div>
+      </div>
+
+      <section class="control-panel">
+        <div class="left-tools">
+          <button class="tool-round" id="csvBtn">Scarica CSV</button>
+          <button class="tool-round" id="resetBtn">Reset</button>
+          <button class="tool-round" id="legendBtn">Legenda</button>
+          <button class="tool-round" id="sendSheetBtn">Invia dati</button>
+          <button class="tool-round" id="notesHelpBtn">Note</button>
+          <div class="note-compose">
+            <textarea class="note-box" id="noteText" placeholder="Scrivi una nota, un rischio, un’opportunità o una misura da associare alla scena."></textarea>
+            <button class="tool-round blue" id="notePlaceBtn">Aggiungi nota</button>
+          </div>
+        </div>
+        <div class="sliders" id="sliders"></div>
+        <div class="preset-panel">
+          <div class="legend-box" id="liveLegend"><strong>Backcasting:</strong> modifica leve e tempo per avvicinare il sistema a una configurazione desiderabile.</div>
+          <div class="legend-box"><strong>Scala leve:</strong><br>1 = minimo<br>100 = massimo<br><br>Gli elementi nel panorama aumentano, diminuiscono o si scuriscono in base ai valori.</div>
+        </div>
+      </section>
+    </section>
+  </main>
+</div>
+
+<div class="modal" id="modal"><div class="modal-card"><h3 id="modalTitle">Nota</h3><div id="modalText"></div><div class="modal-actions"><button class="pill-btn primary" id="modalClose">Chiudi</button></div></div></div>
+
+<script>
+const CONFIG = {
+  SHEET_ENDPOINT: 'https://script.google.com/macros/s/AKfycbyTj4HANHYgMZIKQFq8haw8-2LCERp5LqgjSVBgJLC3Mp3SmkodMw-tTemRReWvgVGPMw/exec',
+  AUTO_SYNC: true,
+  FETCH_NOTES_ON_LOAD: true
+};
+const qs = (s, r=document)=>r.querySelector(s);
+const qsa = (s, r=document)=>Array.from(r.querySelectorAll(s));
+const clamp = (n,min=0,max=100)=>Math.max(min,Math.min(max,n));
+const lerp = (a,b,t)=>a+(b-a)*t;
+
+const parameterDefs = [
+  {id:'posidonia', label:'Protezione\nPosidonia', value:50},
+  {id:'refugia', label:'Rifugi\nclimatici', value:42},
+  {id:'fishing', label:'Sforzo\npesca', value:55},
+  {id:'adaptiveFishing', label:'Pesca\nadattiva', value:45},
+  {id:'aquaculture', label:'Acquacoltura\nresiliente', value:50},
+  {id:'ecotourism', label:'Eco-\nturismo', value:45},
+  {id:'traffic', label:'Traffico\nmarittimo', value:50},
+  {id:'governance', label:'Governance\nadattiva', value:42},
+  {id:'climate', label:'Pressione\nclimatica', value:45}
+];
+const state = Object.fromEntries(parameterDefs.map(d=>[d.id,d.value]));
+let year = 2026, tYear = 0, angle = 0, placing = false, audioOn = false;
+let notes = [];
+
+const scenarios = {
+  S1:{title:'Blue paradise under pressure', subtitle:'Crescita blu adattiva in equilibrio fragile', narrative:'La traiettoria sostiene attività economiche blu, pesca, acquacoltura e turismo, ma mantiene una soglia ecologica minima. Il sistema resta produttivo solo se le pressioni sono gestite e la governance rimane attiva.', color:'#f4a71d'},
+  S2:{title:'Protected waters and shared stewardship', subtitle:'Protezione, co-gestione e resilienza locale', narrative:'La traiettoria privilegia rifugi climatici, recupero della Posidonia, nursery e co-gestione. Le attività economiche restano presenti, ma vengono riorientate verso pratiche compatibili con la resilienza ecologica e sociale.', color:'#43af66'},
+  S3:{title:'Fragmented sea', subtitle:'Degrado ecologico e perdita di capacità adattiva', narrative:'Il sistema si avvicina a una traiettoria di frammentazione: habitat stressati, stock più fragili, maggiori pressioni nautiche e capacità adattiva insufficiente. La visualizzazione si scurisce per indicare drammaticità e incertezza.', color:'#da1f26'},
+  INT:{title:'Scenario intermedio', subtitle:'Traiettoria non ancora stabilizzata', narrative:'La configurazione mostra una trasformazione parziale. Alcuni parametri sono coerenti con uno scenario normativo, ma mancano ancora soglie minime robuste. Rafforza habitat, governance o riduzione delle pressioni per consolidare una traiettoria.', color:'#769bad'}
+};
+
+const slidersEl = qs('#sliders');
+parameterDefs.forEach(def=>{
+  const card=document.createElement('div'); card.className='slider-card';
+  card.innerHTML=`<div class="v-slider-shell"><div class="slider-scale"><span>100</span><span>1</span></div><div class="v-slider-wrap"><input class="v-slider" type="range" min="1" max="100" value="${def.value}" data-id="${def.id}" aria-label="${def.label.replace(/\n/g,' ')}"></div></div><label>${def.label.replace(/\n/g,'<br>')}</label><div class="slider-value" id="val-${def.id}">${def.value}</div>`;
+  slidersEl.appendChild(card);
+});
+
+
+const sceneLayerEl = qs('#sceneLayer');
+const densityConfig = {
+  // Coordinate sul panorama completo: 0–25 costa, 25–50 poco fuori costa, 50–75 mare intermedio, 75–100 largo.
+  // Ogni famiglia mantiene alcuni elementi base, poi aumenta con le leve/scenario.
+  clouds:{extra:11,min:4,xMin:6,xMax:98,yMin:4,yMax:16,wMin:170,wMax:310,depth:.24,z:1,mode:'spread'},
+  seaLevelChart:{extra:3,min:3,xMin:12,xMax:92,yMin:17,yMax:24,wMin:168,wMax:190,depth:.34,z:6,mode:'spread'},
+  acidChart:{extra:3,min:2,xMin:34,xMax:96,yMin:19,yMax:27,wMin:172,wMax:198,depth:.38,z:6,mode:'offshore'},
+
+  tourism:{extra:15,min:3,xMin:10,xMax:96,yMin:32,yMax:52,wMin:88,wMax:156,depth:.88,z:5,mode:'spread'},
+  fishing:{extra:11,min:2,xMin:12,xMax:88,yMin:40,yMax:54,wMin:104,wMax:168,depth:.66,z:5,mode:'spread'},
+  traffic:{extra:8,min:1,xMin:20,xMax:94,yMin:34,yMax:49,wMin:88,wMax:146,depth:.78,z:5,mode:'spread'},
+  petroleum:{extra:7,min:1,xMin:16,xMax:94,yMin:27,yMax:42,wMin:138,wMax:206,depth:.60,z:5,mode:'spread'},
+  cargo:{extra:7,min:0,xMin:48,xMax:96,yMin:26,yMax:40,wMin:128,wMax:186,depth:.62,z:5,mode:'offshore'},
+  sustainableCargo:{extra:6,min:0,xMin:54,xMax:96,yMin:27,yMax:42,wMin:116,wMax:172,depth:.62,z:5,mode:'offshore'},
+
+  posidoniaHealthy:{extra:14,min:2,xMin:26,xMax:68,yMin:68,yMax:82,wMin:108,wMax:158,depth:.42,z:2,mode:'near'},
+  posidoniaStressed:{extra:12,min:0,xMin:24,xMax:70,yMin:71,yMax:85,wMin:106,wMax:156,depth:.45,z:2,mode:'near'},
+  fish:{extra:16,min:1,xMin:46,xMax:98,yMin:55,yMax:69,wMin:90,wMax:142,depth:.80,z:3,mode:'offshore'},
+  cetacean:{extra:9,min:1,xMin:58,xMax:98,yMin:43,yMax:57,wMin:138,wMax:202,depth:.88,z:3,mode:'offshore'},
+  wind:{extra:8,min:0,xMin:58,xMax:98,yMin:26,yMax:39,wMin:104,wMax:152,depth:.55,z:4,mode:'offshore'},
+  aquaculture:{extra:7,min:0,xMin:30,xMax:70,yMin:59,yMax:70,wMin:116,wMax:164,depth:.50,z:4,mode:'near'}
+}
+function parseVarNum(el,name,unitlessFallback=0){
+  const raw = el.style.getPropertyValue(name)||'';
+  const n = parseFloat(String(raw).replace(/[^0-9.-]/g,''));
+  return Number.isFinite(n)?n:unitlessFallback;
+}
+
+function segmentOf(x){ return x < 25 ? 0 : x < 50 ? 1 : x < 75 ? 2 : 3; }
+function priorityFor(role, conf, x, idx){
+  const seg = segmentOf(x);
+  let target;
+  if(conf.mode === 'coast') target = 0;
+  else if(conf.mode === 'near') target = 1;
+  else if(conf.mode === 'offshore') target = 3;
+  else target = idx % 4;
+  const spreadBonus = conf.mode === 'spread' ? Math.abs(seg - (idx % 4)) * .18 : Math.abs(seg - target);
+  const coastKeep = (['clouds','tourism','fishing','petroleum','traffic','seaLevelChart'].includes(role) && seg === 0) ? -1.3 : 0;
+  const nearKeep = (['posidoniaHealthy','posidoniaStressed','aquaculture','acidChart'].includes(role) && seg === 1) ? -1.0 : 0;
+  const offshoreKeep = (['fish','cetacean','wind','cargo','sustainableCargo'].includes(role) && seg >= 2) ? -1.1 : 0;
+  return spreadBonus + coastKeep + nearKeep + offshoreKeep + (idx % 17) * .015;
+}
+function seedDynamicSprites(){
+  const wave=[0,.62,-.42,.88,-.78,.25,-.15,.52,-.58,.36,.74,-.3];
+  Object.entries(densityConfig).forEach(([role,conf])=>{
+    const bases=qsa(`[data-role="${role}"]:not([data-generated])`, sceneLayerEl);
+    if(!bases.length) return;
+    const total = bases.length + conf.extra;
+    function place(el, idx, sourceScale=1){
+      const f=(idx+1)/(total+1);
+      const bias = conf.mode === 'offshore' ? Math.pow(f,.68) : conf.mode === 'coast' ? Math.pow(f,1.55) : f;
+      const jitter=wave[idx % wave.length];
+      const x=conf.xMin + bias*(conf.xMax-conf.xMin) + jitter*2.4;
+      const y=conf.yMin + ((idx*37)%100)/100*(conf.yMax-conf.yMin) + jitter*1.2;
+      const w=conf.wMin + ((idx*53)%100)/100*(conf.wMax-conf.wMin);
+      const baseScale = Math.max(.58, sourceScale * (1.02 + ((idx*29)%100)/100*.20));
+      const cx=Math.max(2,Math.min(98,x));
+      el.style.setProperty('--x', `${cx.toFixed(1)}%`);
+      el.style.setProperty('--y', `${Math.max(2,Math.min(92,y)).toFixed(1)}%`);
+      el.style.setProperty('--w', `${Math.round(w)}px`);
+      el.style.setProperty('--depth', `${conf.depth + (((idx%5)-2)*0.035)}`);
+      el.style.setProperty('--rot', `${(((idx%7)-3)*2.8).toFixed(1)}deg`);
+      el.style.setProperty('--scale', baseScale.toFixed(3));
+      el.style.setProperty('--z', conf.z || 3);
+      el.dataset.baseScale = baseScale.toFixed(3);
+      el.dataset.worldX = cx.toFixed(1);
+      el.dataset.priority = priorityFor(role, conf, cx, idx).toFixed(3);
+    }
+    bases.forEach((base,idx)=>place(base, idx, parseVarNum(base,'--scale',1)));
+    for(let i=0;i<conf.extra;i++){
+      const src=bases[i % bases.length];
+      const clone=src.cloneNode(true);
+      clone.dataset.generated='1';
+      clone.classList.add('generated');
+      clone.style.setProperty('--op', '0');
+      place(clone, bases.length + i, parseVarNum(src,'--scale',1));
+      clone.style.display='none';
+      sceneLayerEl.appendChild(clone);
+    }
+  });
+}
+function applyDensity(role, density, minVisible=0){
+  const sprites=qsa(`[data-role="${role}"]`, sceneLayerEl);
+  const clamped=clamp(density,0,100);
+  const visible=Math.max(minVisible, Math.min(sprites.length, Math.round((clamped/100) * sprites.length)));
+  const ordered=[...sprites].sort((a,b)=>parseFloat(a.dataset.priority||0)-parseFloat(b.dataset.priority||0));
+  const visibleSet=new Set(ordered.slice(0,visible));
+  if(visible > 3 && ['clouds','tourism','fishing','petroleum','traffic','fish','cetacean'].includes(role)){
+    [0,1,2,3].forEach(seg=>{
+      const inSeg=ordered.find(el=>segmentOf(parseFloat(el.dataset.worldX||50))===seg);
+      if(inSeg && visibleSet.size < visible + 2) visibleSet.add(inSeg);
+    });
+  }
+  sprites.forEach(el=>{ el.style.display = visibleSet.has(el) ? '' : 'none'; });
+}
+function updateClimateWidgets(){
+  const years = Math.max(0, year - 2026);
+  const sustain = (state.posidonia + state.refugia + state.governance + state.adaptiveFishing + state.ecotourism) / 5;
+  const climateFactor = state.climate / 100;
+  const resilience = sustain / 100;
+  const currentTrendCm = years * 0.28;
+  const stressCm = 65 * Math.pow(tYear, 1.75) * climateFactor * (1 - resilience * 0.35);
+  const seaCm = Math.max(0, Math.round(currentTrendCm + stressCm));
+  const observedPH = (years/10) * 0.018;
+  const stressPH = 0.28 * Math.pow(tYear, 1.55) * climateFactor * (1 - resilience * 0.42);
+  const phDrop = Math.max(0, observedPH + stressPH);
+  qsa('[data-metric="seaLevel"]').forEach(el=>el.textContent = `+${seaCm} cm`);
+  qsa('[data-metric="acidification"]').forEach(el=>el.textContent = `pH −${phDrop.toFixed(2)}`);
+  const seaRiseNorm = Math.min(1, seaCm / 70);
+  const acidNorm = Math.min(1, phDrop / 0.35);
+  const seaY1 = 24 - seaRiseNorm * 8;
+  const seaY2 = 22 - seaRiseNorm * 10;
+  const seaY3 = 17 - seaRiseNorm * 9;
+  const seaY4 = 8 - seaRiseNorm * 6;
+  qsa('[data-trend="seaLevel"]').forEach(el=>el.setAttribute('d', `M6 25 C34 ${seaY1.toFixed(1)}, 54 ${seaY2.toFixed(1)}, 76 ${seaY3.toFixed(1)} S114 ${(seaY4+2).toFixed(1)}, 144 ${seaY4.toFixed(1)}`));
+  const acidY1 = 9 + acidNorm * 3;
+  const acidY2 = 12 + acidNorm * 5;
+  const acidY3 = 16 + acidNorm * 6;
+  const acidY4 = 24 + acidNorm * 3;
+  qsa('[data-trend="acidification"]').forEach(el=>el.setAttribute('d', `M6 8 C34 ${acidY1.toFixed(1)}, 54 ${acidY2.toFixed(1)}, 76 ${acidY3.toFixed(1)} S114 ${(acidY4-1).toFixed(1)}, 144 ${acidY4.toFixed(1)}`));
+}
+function getPanoramaMetrics(){
+  const win = qs('.panorama-window');
+  const img = qs('#panoramaBg');
+  if(!win || !img) return {frameW:0,frameH:0,imgW:0,maxShift:0};
+  const frameW = win.clientWidth || 0;
+  const frameH = win.clientHeight || 0;
+  const ratio = (img.naturalWidth && img.naturalHeight) ? img.naturalWidth / img.naturalHeight : 2048/193;
+  const imgW = Math.max(frameW, frameH * ratio);
+  const maxShift = Math.max(0, imgW - frameW);
+  return {frameW,frameH,imgW,maxShift};
+}
+function syncWorldLayerSize(){
+  const m=getPanoramaMetrics();
+  if(!m.imgW) return m;
+  sceneLayerEl.style.width = `${m.imgW}px`;
+  qs('#noteLayer').style.width = `${m.imgW}px`;
+  return m;
+}
+const audioTracks = {
+  nature: new Audio('audio/waves and birds and fishes.mp3'),
+  cicadas: new Audio('audio/only cicadas.mp3'),
+  tourists: new Audio('audio/Turisti e cicale.mp3'),
+  cargo: new Audio('audio/Nave Cargo.mp3'),
+  whales: new Audio('audio/Capodogli.mp3'),
+  wind: new Audio('audio/gabbiani e vento.mp3')
+};
+Object.values(audioTracks).forEach(a=>{a.loop=true; a.preload='auto'; a.volume=0;});
+function setAudioMix(activeScenario, scores){
+  if(!audioOn) return;
+  const danger = Math.max(scores.S3/100, state.climate/100*.85);
+  const protectedness = scores.S2/100;
+  const blue = scores.S1/100;
+  audioTracks.nature.volume = clamp(0.35 + protectedness*0.28 - danger*0.22,0,0.65);
+  audioTracks.cicadas.volume = clamp(0.05 + protectedness*0.16 + state.ecotourism/100*.12 - danger*.08,0,0.32);
+  audioTracks.tourists.volume = clamp(state.ecotourism/100*.18 + blue*.12 - danger*.10,0,0.34);
+  audioTracks.cargo.volume = clamp(state.traffic/100*.42 + danger*.20 - protectedness*.20,0,0.62);
+  audioTracks.whales.volume = clamp(protectedness*.18 + state.refugia/100*.12 - state.traffic/100*.12,0,0.28);
+  audioTracks.wind.volume = clamp(danger*.28 + state.climate/100*.16,0,0.46);
+}
+
+function calculateScores(){
+  const pressureLow = (100-state.fishing + 100-state.traffic)/2;
+  let S2 = (state.posidonia*1.35 + state.refugia*1.4 + state.governance*1.25 + state.ecotourism*.85 + pressureLow*.9 + (100-state.climate)*.55)/6.3;
+  let S1 = (state.aquaculture*1.05 + state.adaptiveFishing + state.ecotourism*.8 + state.governance*.9 + state.posidonia*.8 + (100-Math.abs(state.traffic-45))*.55 + (100-Math.abs(state.fishing-48))*.55)/5.65;
+  if(state.posidonia<38 || state.governance<32) S1 -= 12;
+  let S3 = (state.climate*1.25 + state.traffic*1.1 + state.fishing*.9 + (100-state.posidonia)*1.25 + (100-state.refugia) + (100-state.governance)*1.1)/6.6;
+  const timeStress = tYear*.18*state.climate;
+  S3 += timeStress/10;
+  return {S1:clamp(Math.round(S1)), S2:clamp(Math.round(S2)), S3:clamp(Math.round(S3))};
+}
+function chooseScenario(scores){
+  const arr = Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+  if(arr[0][1] < 68) return 'INT';
+  if(arr[0][0]==='S2' && (state.posidonia<60 || state.refugia<58 || state.governance<58)) return 'INT';
+  if(arr[0][0]==='S1' && (state.posidonia<42 || state.governance<40)) return 'INT';
+  if(arr[0][0]==='S3' && arr[0][1] < 72) return 'INT';
+  return arr[0][0];
+}
+function getPanShiftPx(){
+  const m = syncWorldLayerSize();
+  return -m.maxShift * (angle / 360);
+}
+function getCurrentSetup(){
+  const scores = calculateScores();
+  const scenario = chooseScenario(scores);
+  return {scenario, scenarioTitle:scenarios[scenario].title, year, timelineValue:Math.round(tYear*100), angle, params:{...state}, scores};
+}
+function setupDistance(note){
+  if(!note || !note.params) return 0;
+  const keys=Object.keys(state);
+  const sum=keys.reduce((acc,k)=>acc+Math.abs((Number(note.params[k])||0)-state[k]),0);
+  return sum/keys.length;
+}
+function noteMatchesCurrentSetup(note){
+  if(!note.approved) return false;
+  const scores=calculateScores();
+  const scenario=chooseScenario(scores);
+  const sameScenario = !note.scenario || note.scenario === scenario;
+  const yearOk = Math.abs((Number(note.year)||2026)-year) <= (Number(note.toleranceYears)||3);
+  const angleOk = note.angle===undefined || Math.abs((((Number(note.angle)-angle+540)%360)-180)) <= 22;
+  const paramOk = setupDistance(note) <= (Number(note.toleranceParamMeanAbs)||12);
+  return sameScenario && yearOk && angleOk && paramOk;
+}
+function setSprite(role, opacity, blur=0, extraScale=1){
+  qsa(`[data-role="${role}"]`).forEach((el,i)=>{
+    const active = el.style.display !== 'none';
+    const local = active ? clamp(74 + opacity*.26 + (i%4)*3,62,100)/100 : 0;
+    el.style.setProperty('--op', local.toFixed(2));
+    el.style.setProperty('--blur', active ? blur.toFixed(1)+'px' : '0px');
+    el.style.setProperty('--uncertainty', active ? blur.toFixed(1)+'px' : '0px');
+    const baseScale = el.dataset.baseScale ? Number(el.dataset.baseScale) : parseVarNum(el,'--scale',1);
+    if(!el.dataset.baseScale) el.dataset.baseScale = baseScale;
+    el.style.setProperty('--scale', (baseScale * extraScale * 1.15).toFixed(3));
+  });
+}
+function renderNotes(){
+  const layer = qs('#noteLayer');
+  layer.innerHTML='';
+  notes.forEach((n, idx)=>{
+    if(!noteMatchesCurrentSetup(n)) return;
+    const b=document.createElement('button');
+    b.className='hotspot';
+    b.style.left=`${n.worldX}%`;
+    b.style.top=`${n.y}%`;
+    b.title='Apri nota';
+    const distance = Math.round(setupDistance(n)*10)/10;
+    b.addEventListener('click',(ev)=>{ev.stopPropagation(); showModal('Osservazione', `<p>${escapeHtml(n.text)}</p><p><strong>Scenario:</strong> ${escapeHtml(scenarios[n.scenario]?.title || n.scenario || 'n.d.')}</p><p><strong>Anno:</strong> ${n.year} · <strong>distanza parametri:</strong> ${distance}</p>`);});
+    layer.appendChild(b);
+  });
+}
+function updateVisuals(){
+  const scores = calculateScores();
+  const scenario = chooseScenario(scores);
+  const danger = clamp((scores.S3*0.75 + state.climate*0.55 + tYear*18)/1.48);
+  const uncertainty = clamp((state.climate + Math.abs(scores.S1-scores.S2)*.18 + scores.S3*.45)/2.4,0,55);
+  const dark = clamp((danger-35)/65,0,1);
+  const heat = clamp((state.climate*0.65 + tYear*35 - state.refugia*.14)/100,0,.7);
+  const acid = clamp((state.climate*0.55 + tYear*30 - state.posidonia*.12)/100,0,.52);
+  const parx = 0;
+  const pary = 0;
+  const panShift = getPanShiftPx();
+  qs('#sceneLayer').style.setProperty('--parx', parx+'px');
+  qs('#sceneLayer').style.setProperty('--pary', pary+'px');
+  qs('#sceneLayer').style.transform = `translateX(${panShift}px)`;
+  qs('#noteLayer').style.transform = `translateX(${panShift}px)`;
+  qs('#panoramaBg').style.transform = `translateX(${panShift}px) scale(${1+dark*.03})`;
+  qs('#panoramaBg').style.filter = `brightness(${1-dark*.50}) saturate(${1-dark*.45}) contrast(${1+dark*.18}) blur(${dark*.95}px)`;
+  qs('#heatOverlay').style.opacity = heat.toFixed(2);
+  qs('#acidOverlay').style.opacity = acid.toFixed(2);
+  qs('#darkOverlay').style.opacity = (dark*.82).toFixed(2);
+  qs('#noiseOverlay').style.opacity = (0.06 + dark*.18 + uncertainty/380).toFixed(2);
+
+  applyDensity('clouds', state.climate*.95 + scores.S3*.20 + 35, densityConfig.clouds.min);
+  applyDensity('seaLevelChart', state.climate*.55 + tYear*45 + 45, densityConfig.seaLevelChart.min);
+  applyDensity('acidChart', state.climate*.55 + tYear*45 + 28, densityConfig.acidChart.min);
+
+  applyDensity('tourism', state.ecotourism*.82 + 24 - state.climate*.07, densityConfig.tourism.min);
+  applyDensity('fishing', state.fishing*.82 + 22 - state.adaptiveFishing*.05, densityConfig.fishing.min);
+  applyDensity('traffic', state.traffic*.82 + state.ecotourism*.20 + scores.S3*.08 + 18, densityConfig.traffic.min);
+  applyDensity('petroleum', state.traffic*.72 + scores.S3*.22 + 18 - state.governance*.10, densityConfig.petroleum.min);
+  applyDensity('cargo', state.traffic*.75 + scores.S3*.15 - state.governance*.22, densityConfig.cargo.min);
+  applyDensity('sustainableCargo', Math.min(state.traffic, state.governance)*.62 + state.adaptiveFishing*.22 - scores.S3*.20, densityConfig.sustainableCargo.min);
+
+  applyDensity('posidoniaHealthy', state.posidonia*.95 + state.refugia*.25 - state.climate*.18, densityConfig.posidoniaHealthy.min);
+  applyDensity('posidoniaStressed', (100-state.posidonia)*.82 + state.climate*.34 + tYear*12, densityConfig.posidoniaStressed.min);
+  applyDensity('fish', state.posidonia*.38 + state.refugia*.48 + state.governance*.15 - state.traffic*.14 - state.climate*.20 + 18, densityConfig.fish.min);
+  applyDensity('cetacean', state.refugia*.70 + state.posidonia*.22 - state.traffic*.24 - state.climate*.14 + 24, densityConfig.cetacean.min);
+  applyDensity('wind', state.governance*.38 + state.climate*.26 + state.traffic*.06 + tYear*18, densityConfig.wind.min);
+  applyDensity('aquaculture', state.aquaculture*.78 - state.climate*.08 + state.governance*.10, densityConfig.aquaculture.min);
+  updateClimateWidgets();
+
+  setSprite('clouds', state.climate*.9 + scores.S3*.25 + tYear*12, 0.8 + dark*1.5, .98 + state.climate/360);
+  setSprite('seaLevelChart', state.climate*.55 + tYear*45 + 45, 0, 1.0);
+  setSprite('acidChart', state.climate*.55 + tYear*45 + 28, 0, 1.0);
+
+  setSprite('posidoniaHealthy', state.posidonia*.95 - state.climate*.18 + state.refugia*.12, uncertainty/45, .92 + state.posidonia/280);
+  setSprite('posidoniaStressed', (100-state.posidonia)*.72 + state.climate*.45 + tYear*14, 0.7 + uncertainty/30, .90 + (100-state.posidonia)/285);
+  setSprite('fish', (state.posidonia*.45 + state.refugia*.5 + state.governance*.18 - state.traffic*.25 - state.climate*.25), uncertainty/62, .86 + state.refugia/300);
+  setSprite('cetacean', (state.refugia*.75 + state.posidonia*.35 - state.traffic*.42 - state.climate*.25), uncertainty/58, .90 + state.refugia/300);
+  setSprite('fishing', state.fishing*.85 + (100-state.adaptiveFishing)*.14, uncertainty/48, .88 + state.fishing/310);
+  setSprite('tourism', state.ecotourism*.85 - state.climate*.12, uncertainty/62, .88 + state.ecotourism/315);
+  setSprite('traffic', state.traffic*.88 + scores.S3*.10, 0.4 + uncertainty/42, .88 + state.traffic/320);
+  setSprite('petroleum', state.traffic*.85 + scores.S3*.12, 0.6 + uncertainty/34, .88 + state.traffic/310);
+  setSprite('cargo', state.traffic*.72 + scores.S3*.12, 0.4 + uncertainty/38, .86 + state.traffic/320);
+  setSprite('sustainableCargo', Math.min(state.traffic, state.governance)*.55 + state.adaptiveFishing*.15 - scores.S3*.25, uncertainty/58, .90 + state.governance/340);
+  setSprite('wind', state.governance*.38 + state.climate*.25 + tYear*16, uncertainty/70, .92 + state.governance/360);
+  setSprite('aquaculture', state.aquaculture*.85 - state.climate*.15, uncertainty/55, .88 + state.aquaculture/310);
+
+  ['S1','S2','S3'].forEach(s=>{
+    qs(`#score${s}`).style.width = `${scores[s]}%`;
+    qs(`#score${s}`).style.background = scenarios[s].color;
+    qs(`#score${s}n`).textContent = scores[s];
+  });
+  const sc = scenarios[scenario];
+  qs('#scenarioTitle').textContent = sc.title;
+  qs('#scenarioSubtitle').textContent = sc.subtitle;
+  qs('#narrativeTitle').textContent = sc.title;
+  qs('#narrativeText').textContent = sc.narrative;
+  const chips=[];
+  if(state.posidonia<45) chips.push('Posidonia sotto soglia');
+  if(state.refugia<45) chips.push('Rifugi climatici fragili');
+  if(state.governance<45) chips.push('Governance da rafforzare');
+  if(state.traffic>68) chips.push('Pressione nautica elevata');
+  if(state.climate>66) chips.push('Stress climatico alto');
+  if(chips.length===0) chips.push('Traiettoria coerente');
+  qs('#statusChips').innerHTML = chips.slice(0,4).map(c=>`<span class="status-chip">${c}</span>`).join('');
+  qs('#liveLegend').innerHTML = scenario==='INT'
+    ? '<strong>Scenario intermedio:</strong> aumenta le soglie chiave o riduci le pressioni per consolidare un futuro normativo.'
+    : `<strong>${sc.title}:</strong> configurazione raggiunta con coerenza minima. Verifica trade-off, pressione climatica e parametri sotto soglia.`;
+  qs('#orientationRange').value = angle;
+  setAudioMix(scenario, scores);
+  renderNotes();
+}
+function updateYear(){
+  const v = Number(qs('#timeline').value); tYear = v/100;
+  year = Math.round(2026 + tYear*(2100-2026));
+  const snapYears=[2026,2031,2051,2100];
+  let closest=snapYears.reduce((a,b)=>Math.abs(b-year)<Math.abs(a-year)?b:a,2026);
+  if(Math.abs(closest-year)<=1) year=closest;
+  if(qs('#yearDisplay')) qs('#yearDisplay').textContent = year;
+  updateVisuals();
+  scheduleSync();
+}
+function updateSliderValues(){
+  qsa('.v-slider').forEach(sl=>{
+    state[sl.dataset.id]=Number(sl.value);
+    qs(`#val-${sl.dataset.id}`).textContent=sl.value;
+  });
+  updateVisuals();
+  scheduleSync();
+}
+qsa('.v-slider').forEach(sl=>sl.addEventListener('input', updateSliderValues));
+qs('#timeline').addEventListener('input', updateYear);
+qs('#orientationRange').addEventListener('input', e=>{
+  angle=Number(e.target.value);
+  qs('#mapInner').style.transform=`rotate(${angle}deg)`;
+  qs('#degLabel').textContent=`${angle}°`;
+  updateVisuals();
+});
+qs('#resetBtn').addEventListener('click',()=>{
+  Object.assign(state,{posidonia:50,refugia:42,fishing:55,adaptiveFishing:45,aquaculture:50,ecotourism:45,traffic:50,governance:42,climate:45});
+  Object.keys(state).forEach(k=>{const sl=qs(`.v-slider[data-id="${k}"]`); if(sl){sl.value=state[k]; qs(`#val-${k}`).textContent=state[k];}});
+  qs('#timeline').value=0; tYear=0; year=2026; angle=0; qs('#orientationRange').value=0; qs('#mapInner').style.transform='rotate(0deg)'; qs('#degLabel').textContent='0°'; if(qs('#yearDisplay')) qs('#yearDisplay').textContent=year; updateVisuals();
+});
+
+const scenarioPresets = {
+  S1:{posidonia:62,refugia:50,fishing:48,adaptiveFishing:76,aquaculture:78,ecotourism:62,traffic:42,governance:68,climate:42},
+  S2:{posidonia:90,refugia:86,fishing:28,adaptiveFishing:64,aquaculture:56,ecotourism:78,traffic:24,governance:90,climate:35},
+  S3:{posidonia:22,refugia:18,fishing:82,adaptiveFishing:18,aquaculture:28,ecotourism:14,traffic:86,governance:20,climate:82}
+};
+function applyScenarioPreset(id){
+  const preset=scenarioPresets[id];
+  if(!preset) return;
+  Object.assign(state,preset);
+  Object.keys(state).forEach(k=>{
+    const sl=qs(`.v-slider[data-id="${k}"]`);
+    if(sl){sl.value=state[k]; qs(`#val-${k}`).textContent=state[k];}
+  });
+  updateVisuals();
+  scheduleSync();
+}
+qsa('[data-scenario-preset]').forEach(btn=>btn.addEventListener('click',()=>applyScenarioPreset(btn.dataset.scenarioPreset)));
+
+qs('#legendBtn').addEventListener('click',()=>showModal('Legenda del tool', `
+  <ul>
+    <li><strong>Panorama centrale:</strong> visualizza la configurazione socio-ecologica del Golfo di Olbia in forma 2.5D.</li>
+    <li><strong>Leve verticali:</strong> modificano i principali parametri strutturali dello scenario.</li>
+    <li><strong>Timeline:</strong> sposta l'orizzonte temporale dalla baseline 2026 al 2100.</li>
+    <li><strong>Ghiera circolare e barra superiore:</strong> ruotano l'orientamento della scena e della mappa.</li>
+    <li><strong>Scala delle leve:</strong> ogni leva è verticale e usa una scala 1–100, dove 1 è minimo e 100 massimo.</li>
+    <li><strong>Toni scuri, blur e overlay:</strong> indicano maggiore drammaticità, incertezza e pressione climatica.</li>
+    <li><strong>Note:</strong> scrivi una nota, clicca “Aggiungi nota” e poi clicca un punto del panorama. Le note si aprono in overlay arancione e sono ancorate allo scenario/set-up con cui sono state create.</li>
+  </ul>
+`));
+qs('#tutorialBtn').addEventListener('click', openTutorial);
+qs('#sendSheetBtn').addEventListener('click', async()=>{
+  const btn=qs('#sendSheetBtn');
+  const old=btn.textContent;
+  btn.textContent='Invio…';
+  try{
+    await syncStateToSheet();
+    btn.textContent='Inviato';
+    setTimeout(()=>btn.textContent=old,1400);
+  }catch(err){
+    console.warn('Invio manuale non riuscito', err);
+    btn.textContent='Errore';
+    setTimeout(()=>btn.textContent=old,1600);
+  }
+});
+qs('#notesHelpBtn').addEventListener('click', ()=>showModal('Uso delle note', '<p>Le note sono moderate tramite Google Sheet. Dopo aver scritto il testo, premi <strong>Aggiungi nota</strong> e clicca un punto del panorama. La nota viene salvata con anno, scenario, valori delle leve e posizione: ricompare solo quando l’utente torna vicino a quello stesso set-up.</p>'));
+qs('#modalClose').addEventListener('click',()=>qs('#modal').classList.remove('active'));
+function showModal(title,html){qs('#modalTitle').textContent=title; qs('#modalText').innerHTML=html; qs('#modal').classList.add('active');}
+function openTutorial(){
+  showModal('Tutorial iniziale', `
+    <p>Questo prototipo rappresenta una <strong>web app di backcasting per scenari normativi</strong>.</p>
+    <ul>
+      <li><strong>1. Parti dal 2026:</strong> la timeline in basso è inizializzata sulla baseline.</li>
+      <li><strong>2. Muovi le leve:</strong> ogni leva modifica un parametro strutturale.</li>
+      <li><strong>3. Leggi i punteggi:</strong> a destra compaiono i livelli di coerenza con S1, S2 e S3.</li>
+      <li><strong>4. Osserva la scena:</strong> il panorama si scurisce nei casi più drammatici; blur e opacità indicano incertezza e stress.</li>
+      <li><strong>5. Aggiungi note:</strong> usa il box in basso a sinistra e clicca un punto del panorama.</li>
+      <li><strong>6. Esporta o invia:</strong> usa “Scarica JPEG”, “Scarica CSV” oppure “Invia dati”.</li>
+    </ul>
+  `);
+}
+function escapeHtml(str){return String(str).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));}
+
+qs('#notePlaceBtn').addEventListener('click',()=>{
+  const txt=qs('#noteText').value.trim();
+  if(!txt){showModal('Nota mancante','<p>Scrivi prima una nota nel box, poi premi <strong>Aggiungi nota</strong> e posizionala nella scena.</p>');return;}
+  placing=true; qs('#appCard').classList.add('placing');
+});
+qs('#sceneWrap').addEventListener('click',e=>{
+  if(!placing) return;
+  const rect=qs('#sceneWrap').getBoundingClientRect();
+  const panShift = getPanShiftPx();
+  const m = getPanoramaMetrics();
+  const worldX = ((e.clientX-rect.left - panShift)/(m.imgW || rect.width))*100;
+  const y=((e.clientY-rect.top)/rect.height)*100;
+  const txt=qs('#noteText').value.trim();
+  addHotspot(worldX,y,txt); qs('#noteText').value=''; placing=false; qs('#appCard').classList.remove('placing');
+});
+function addHotspot(worldX,y,text,approved=true){
+  const setup=getCurrentSetup();
+  const note={
+    note_id:'note_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+    created_at:new Date().toISOString(),
+    approved,
+    year,
+    timelineValue:setup.timelineValue,
+    angle,
+    scenario:setup.scenario,
+    scenarioTitle:setup.scenarioTitle,
+    worldX:Math.round(worldX*10)/10,
+    y:Math.round(y*10)/10,
+    text,
+    toleranceYears:3,
+    toleranceParamMeanAbs:12,
+    params:{...state},
+    scores:setup.scores
+  };
+  notes.push(note);
+  renderNotes();
+  postNoteToSheet(note);
+}
+
+qs('#csvBtn').addEventListener('click',()=>{
+  const scores=calculateScores(); const scenario=chooseScenario(scores);
+  const rows=[['tipo','id','timestamp','anno','timeline_value','scenario','S1_score','S2_score','S3_score','x_pct','y_pct','angle','parametro','valore','note']];
+  Object.keys(state).forEach(k=>rows.push(['parametro','',new Date().toISOString(),year,Math.round(tYear*100),scenarios[scenario].title,scores.S1,scores.S2,scores.S3,'','',angle,k,state[k],'']));
+  notes.forEach(n=>rows.push(['nota',n.note_id||'',n.created_at||'',n.year,n.timelineValue||'',scenarios[n.scenario]?.title||n.scenario||'',n.scores?.S1||'',n.scores?.S2||'',n.scores?.S3||'',n.worldX,n.y,n.angle||'', 'nota', '', n.text]));
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\n');
+  downloadBlob(csv, `incore_scenario_${year}.csv`, 'text/csv;charset=utf-8');
+});
+function downloadBlob(content, filename, type){const blob=new Blob([content],{type}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1200);}
+qs('#snapshotBtn').addEventListener('click',async()=>{
+  const btn=qs('#snapshotBtn');
+  const old=btn.innerHTML;
+  btn.disabled=true;
+  try{
+    if(typeof html2canvas==='undefined') throw new Error('html2canvas non disponibile');
+    const el=qs('#appCard');
+    const canvas=await html2canvas(el,{backgroundColor:'#f4f6fb',scale:2,useCORS:true,allowTaint:false,logging:false});
+    canvas.toBlob(blob=>{
+      if(!blob) throw new Error('Blob JPEG non creato');
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download=`INCORE-MED_scenario_${year}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href),1200);
+    },'image/jpeg',.92);
+  }catch(err){
+    console.warn('Export JPEG non riuscito', err);
+    btn.textContent='JPEG non riuscito';
+    setTimeout(()=>{btn.innerHTML=old;},1400);
+  }finally{
+    setTimeout(()=>{btn.disabled=false;},500);
+  }
+});
+qs('#audioBtn').addEventListener('click',async()=>{
+  audioOn=!audioOn;
+  qs('#audioText').textContent=audioOn?'Audio ON':'Audio OFF';
+  qs('#audioBtn').classList.toggle('primary',audioOn); qs('#audioBtn').classList.toggle('audio-off',!audioOn);
+  if(audioOn){for(const a of Object.values(audioTracks)){try{await a.play();}catch(e){}} updateVisuals();}
+  else{Object.values(audioTracks).forEach(a=>{a.volume=0; a.pause();});}
+});
+qs('#audioBtn').classList.add('audio-off');
+
+let draggingDial=false;
+function setAngleFromPointer(e){
+  const rect=qs('#mapDial').getBoundingClientRect(); const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+  angle=Math.round((Math.atan2(e.clientY-cy,e.clientX-cx)*180/Math.PI + 90 + 360)%360);
+  qs('#mapInner').style.transform=`rotate(${angle}deg)`; qs('#degLabel').textContent=`${angle}°`; qs('#orientationRange').value=angle; updateVisuals();
+}
+qs('#mapDial').addEventListener('pointerdown',e=>{draggingDial=true; qs('#mapDial').setPointerCapture(e.pointerId); setAngleFromPointer(e);});
+qs('#mapDial').addEventListener('pointermove',e=>{if(draggingDial) setAngleFromPointer(e);});
+qs('#mapDial').addEventListener('pointerup',()=>draggingDial=false);
+
+let syncTimer;
+function scheduleSync(){ if(!CONFIG.AUTO_SYNC || !CONFIG.SHEET_ENDPOINT) return; clearTimeout(syncTimer); syncTimer=setTimeout(syncStateToSheet, 800); }
+async function postJSON(payload){
+  if(!CONFIG.SHEET_ENDPOINT) return false;
+  const body = JSON.stringify(payload);
+  try{
+    await fetch(CONFIG.SHEET_ENDPOINT, {
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body
+    });
+    return true;
+  }catch(err){
+    console.warn('Sync foglio via fetch non riuscito, provo fallback form', err);
+    return postWithHiddenForm(body);
+  }
+}
+function postWithHiddenForm(body){
+  return new Promise(resolve=>{
+    if(!CONFIG.SHEET_ENDPOINT) return resolve(false);
+    const iframeName='incoremed_state_submit_'+Date.now();
+    const iframe=document.createElement('iframe');
+    iframe.name=iframeName;
+    iframe.style.display='none';
+    const form=document.createElement('form');
+    form.method='POST';
+    form.action=CONFIG.SHEET_ENDPOINT;
+    form.target=iframeName;
+    form.enctype='text/plain';
+    form.style.display='none';
+    const input=document.createElement('input');
+    input.type='hidden';
+    input.name='payload';
+    input.value=body;
+    form.appendChild(input);
+    document.body.appendChild(iframe);
+    document.body.appendChild(form);
+    let done=false;
+    const finish=ok=>{ if(done) return; done=true; setTimeout(()=>{form.remove(); iframe.remove();},650); resolve(ok); };
+    iframe.addEventListener('load',()=>finish(true));
+    setTimeout(()=>finish(true),2300);
+    form.submit();
+  });
+}
+function currentPayload(){
+  const setup=getCurrentSetup();
+  return { action:'save_state', timestamp:new Date().toISOString(), ...setup };
+}
+function syncStateToSheet(){ return postJSON(currentPayload()); }
+function postNoteToSheet(note){ return postJSON({ action:'add_note', timestamp:new Date().toISOString(), note, params:note.params||{}, scores:note.scores||{}, year:note.year, angle:note.angle, scenario:note.scenario, scenario_title:note.scenarioTitle, timeline_value:note.timelineValue, coast_sea_value:note.angle, userAgent:navigator.userAgent }); }
+async function fetchApprovedNotes(){
+  if(!CONFIG.SHEET_ENDPOINT || !CONFIG.FETCH_NOTES_ON_LOAD) return;
+  try{
+    const url = new URL(CONFIG.SHEET_ENDPOINT);
+    url.searchParams.set('action','notes');
+    const res = await fetch(url.toString());
+    const data = await res.json();
+    if(Array.isArray(data.notes)){
+      notes = data.notes.map(n=>({
+        note_id:n.note_id||n.id||'',
+        created_at:n.created_at||n.timestamp||'',
+        approved:true,
+        year:Number(n.year)||2026,
+        timelineValue:Number(n.timelineValue)||0,
+        angle:Number(n.angle)||0,
+        scenario:n.scenario||'INT',
+        scenarioTitle:n.scenarioTitle||'',
+        worldX:Number(n.worldX)||50,
+        y:Number(n.y)||50,
+        text:n.text||n.note_text||'',
+        toleranceYears:Number(n.toleranceYears)||3,
+        toleranceParamMeanAbs:Number(n.toleranceParamMeanAbs)||12,
+        params:n.params||{},
+        scores:n.scores||{}
+      }));
+      renderNotes();
+    }
+  }catch(err){ console.warn('Fetch note moderato non riuscito', err); }
+}
+
+qs('#panoramaBg').addEventListener('load', updateVisuals);
+window.addEventListener('resize', updateVisuals);
+seedDynamicSprites(); updateYear(); updateSliderValues(); fetchApprovedNotes();
+</script>
+</body>
+</html>
